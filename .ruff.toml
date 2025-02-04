@@ -1,0 +1,19 @@
+# Based on https://github.com/home-assistant/core/blob/dev/pyproject.toml
+
+target-version = "py312"
+
+lint.select = [
+    "ALL"
+]
+
+lint.ignore = [
+    "D203", # no-blank-line-before-class (incompatible with formatter)
+    "D212", # multi-line-summary-first-line (incompatible with formatter)
+    "F811", # redefined-while-unused
+    "ARG001", # unused-function-argument
+    "ANN001", # missing-type-function-argument
+    "ANN201", # missing-type-undocumented-public-function
+    "ANN202", # missing-return-type-private-function
+    "ANN204", # missing-return-type-special-method
+    "COM812", # missing-trailing-comma
+]
