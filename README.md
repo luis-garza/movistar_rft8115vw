@@ -1,3 +1,20 @@
+[validate_badge]: https://img.shields.io/github/actions/workflow/status/luis-garza/movistar_rft8115vw/validate.yaml?logo=github
+[validate_url]: https://github.com/luis-garza/movistar_rft8115vw/actions/workflows/validate.yaml
+
+[release_badge]: https://img.shields.io/github/release/luis-garza/movistar_rft8115vw.svg?logo=github&color=lightgrey
+[release_url]: https://github.com/luis-garza/movistar_rft8115vw/releases/latest
+
+[integration_badge]: https://img.shields.io/badge/dynamic/json?logo=home-assistant&logoColor=white&label=installations&labelColor=41bdf5&color=lightgrey&url=https://analytics.home-assistant.io/custom_integrations.json&query=movistar_rft8115vw.total
+[integration_url]: https://my.home-assistant.io/redirect/hacs_repository/?owner=luis-garza&repository=movistar_rft8115vw
+
+[community_badge]: https://img.shields.io/static/v1.svg?logo=home-assistant&logoColor=white&labelColor=41bdf5&label=community&message=forum
+[community_url]: https://community.home-assistant.io/t/movistars-askey-rft8115vw/841398
+
+[![GitHub Validate][validate_badge]][validate_url]
+[![GitHub Release][release_badge]][release_url]
+[![HA integration usage][integration_badge]][integration_url]
+[![Community Forum][community_badge]][community_url]
+
 # movistar_rft8115vw
 
 Home Assistant [device tracker](https://www.home-assistant.io/integrations/device_tracker) integration for Movistar's Askey RFT8115VW router.
