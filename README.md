@@ -19,7 +19,7 @@
 
 Home Assistant [device tracker](https://www.home-assistant.io/integrations/device_tracker) integration for Movistar's Askey RFT8115VW router.
 
-[![Open HACS repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luis-garza&repository=movistar_rft8115vw)
+[![Open HACS repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luis-garza&repository=movistar_rft8115vw&category=integration)
 
 ## Details
 
@@ -37,7 +37,7 @@ The integration can be deployed using [HACS](<https://hacs.xyz>) or manually. It
 
 Open [HACS](<https://hacs.xyz>) in Home Assistant and search for Movistar device tracker integration, or just click next button:
 
-[![Open HACS repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luis-garza&repository=movistar_rft8115vw)
+[![Open HACS repository](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=luis-garza&repository=movistar_rft8115vw&category=integration)
 
 ### Manual
 
