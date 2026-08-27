@@ -1,0 +1,33 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Este router já está configurado"
+    },
+    "step": {
+      "user": {
+        "title": "Ligar ao router",
+        "description": "Ligue-se ao seu router Movistar Askey RFT8115VW",
+        "data": {
+          "host": "Host",
+          "password": "Palavra-passe"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Não foi possível alcançar o router, verifique o host",
+      "invalid_auth": "Palavra-passe do router inválida",
+      "unknown": "Erro inesperado"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configurar opções",
+        "data": {
+          "interval_seconds": "Intervalo de pesquisa (segundos)",
+          "consider_home": "Considerar em casa (segundos)"
+        }
+      }
+    }
+  }
+}

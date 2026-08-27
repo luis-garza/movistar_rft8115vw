@@ -25,9 +25,9 @@ Home Assistant [device tracker](https://www.home-assistant.io/integrations/devic
 
 This integration tracks devices connected to a Movistar's Askey RFT8115VW router.
 
-Any device connected is recorded in [known_devices.yaml](<https://www.home-assistant.io/integrations/device_tracker/#known_devicesyaml>) file and tracked properly. Once a device is tracked, it can be assigned to a [person](https://www.home-assistant.io/integrations/person) to enable its presence state.
+Every connected device is exposed as a `device_tracker` entity, so it can be assigned to a [person](https://www.home-assistant.io/integrations/person) to enable its presence state.
 
-In order to correctly identify the devices, the host name is used as device name if it's available, if it isn't then the MAC address is used instead.
+In order to correctly identify the devices, the host name is used as the device name if available; otherwise the MAC address is used instead.
 
 ## Installation
 
@@ -45,47 +45,49 @@ Download all content from `movistar_rft8115vw` folder, and place it in a new cus
 
 ## Set up
 
-To set up the integration, place the following snippet in [configuration.yaml](<https://www.home-assistant.io/docs/configuration>) file.
+To set up the integration, go to **Settings** → **Devices & Services** → **Add Integration** and search for *Movistar Askey RFT8115VW router*. Alternatively, use the following button:
 
-```yaml
-# Movistar Askey RFT8115VW
-device_tracker:
-  - platform: movistar_rft8115vw
-    host: <router address>
-    password: <router password>
-    interval_seconds: 60
-    consider_home: 360
-    new_device_defaults:
-      track_new_devices: false
-```
+[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=movistar_rft8115vw)
 
-Change the following parameters accordingly:
+You will be asked for:
 
-- **host:** Router's hostname or IP address, usually 192.168.1.1 or 192.168.0.1.
-- **password:** Router's user login password.
-- **interval_seconds:** Seconds between each scan for new devices, default `12`.
-- **consider_home:** Seconds to consider a device as `not home` after not being seen, default `180`.
-- **track_new_devices:** Track by default every discovered device, either way
-will be recorded in [known_devices.yaml](<https://www.home-assistant.io/integrations/device_tracker/#known_devicesyaml>) file.
+- **Host:** Router's hostname or IP address, usually `192.168.0.1` or `192.168.1.1`.
+- **Password:** Router's user login password.
 
-For more information about the [device tracker](https://www.home-assistant.io/integrations/device_tracker) parameters check the official Home Assistant Documentation.
+Once the integration is loaded, each connected device is added as a `device_tracker` entity. New devices are picked up automatically on the next scan.
 
-Finally, restart Home Assistant to load and start the integration.
+Two options can be adjusted from the integration's options (**Settings** → **Devices & Services** → *Movistar Askey RFT8115VW router* → **Configure**):
+
+- **Scan interval (seconds):** how often to poll the router, default `60`.
+- **Consider home (seconds):** how long after a device is last seen before it is marked `not_home`, default `180`.
 
 ## Troubleshooting
 
-To enable debug logs just place next snippet in [configuration.yaml](<https://www.home-assistant.io/docs/configuration>) file.
+### Enable debug logs
 
-```yaml
-logger:
-  default: warn
-  logs:
-    custom_components.movistar_rft8115vw: debug
-```
+Enable them from the UI, go to **Settings** → **Devices & Services** → *Movistar Askey RFT8115VW router* → ⋮ → **Enable debug logging**.
+
+### Setup errors
+
+The setup form shows a specific message when something fails:
+
+- **"Unable to reach the router, check the host"** — the router is not reachable. Verify the host/IP, that the router is on, and that Home Assistant is on the same network.
+- **"Invalid router password"** — the password is wrong. Use the router's login password.
+- **"Unexpected error"** — enable debug logs and report the issue.
+
+### Devices not showing up
+
+- The router is polled every **scan interval** (default `60` seconds); new devices appear on the next scan.
+- A device is marked `not_home` after **consider home** (default `180` seconds) since it was last seen. Detection granularity is the scan interval, so keep it smaller than `consider home`.
+- Both values are changed in **Settings** → **Devices & Services** → *Movistar Askey RFT8115VW router* → **Configure**.
+
+### Change host or password
+
+The host and password are set when adding the integration and cannot be edited afterwards. To change them, delete the integration and add it again.
 
 ## References
 
-This integration is based on [askey_rft3505](https://github.com/jotacor/homeassistant-custom_components) integration from [Jotacor](https://github.com/jotacor).
+The first version of this integration was based on [askey_rft3505](https://github.com/jotacor/homeassistant-custom_components) integration from [Jotacor](https://github.com/jotacor).
 
 ## Support me
 

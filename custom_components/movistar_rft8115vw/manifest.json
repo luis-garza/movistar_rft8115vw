@@ -4,12 +4,13 @@
     "codeowners": [
         "@luis-garza"
     ],
+    "config_flow": true,
     "documentation": "https://github.com/luis-garza/movistar_rft8115vw",
-    "integration_type": "entity",
+    "integration_type": "hub",
     "iot_class": "local_polling",
     "issue_tracker": "https://github.com/luis-garza/movistar_rft8115vw/issues",
     "loggers": [
         "custom_components.movistar_rft8115vw"
     ],
-    "version": "1.0.0"
+    "version": "2.0.0"
 }
