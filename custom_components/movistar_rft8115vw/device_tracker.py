@@ -1,117 +1,95 @@
-"""Movistar's Askey RFT8115VW router integration."""
+"""Device tracker platform for the Movistar Askey RFT8115VW router."""
 
-import ast
 import logging
-import re
 
-import homeassistant.helpers.config_validation as cv
-import requests
-import voluptuous as vol
-from homeassistant.components.device_tracker import (
-    PLATFORM_SCHEMA,
-    DeviceScanner,
-)
-from homeassistant.const import CONF_HOST, CONF_PASSWORD
+from homeassistant.components.device_tracker import ScannerEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-DOMAIN = "movistar_rft8115vw"
+from .client import MovistarDevice
+from .coordinator import MovistarCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
-    {vol.Required(CONF_HOST): cv.string, vol.Required(CONF_PASSWORD): cv.string}
-)
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up the device tracker platform from a config entry."""
+    coordinator = MovistarCoordinator(hass, entry)
+    await coordinator.async_config_entry_first_refresh()
+
+    tracked_devices: dict[str, MovistarDeviceTracker] = {}
+
+    @callback
+    def _async_add_new_devices() -> None:
+        """Create entities for newly discovered devices."""
+        if coordinator.data is None:
+            return
+
+        new_entities: list[MovistarDeviceTracker] = []
+        for mac in coordinator.data:
+            if mac in tracked_devices:
+                continue
+            entity = MovistarDeviceTracker(coordinator, mac)
+            tracked_devices[mac] = entity
+            new_entities.append(entity)
+
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_async_add_new_devices))
+    _async_add_new_devices()
 
 
-def get_scanner(hass, config):
-    """Validate the configuration and return a scanner."""
-    scanner = MovistarDeviceScanner(config["device_tracker"])
-    return scanner if scanner.success_init else None
+class MovistarDeviceTracker(CoordinatorEntity[MovistarCoordinator], ScannerEntity):
+    """Representation of a device connected to the router."""
 
+    def __init__(self, coordinator: MovistarCoordinator, mac: str) -> None:
+        """Initialize the device tracker entity."""
+        super().__init__(coordinator)
+        self._mac = mac
+        self._attr_mac_address = mac
 
-class MovistarDeviceScanner(DeviceScanner):
-    """Looks for devices connected to a Movistar's Askey RFT8115VW router."""
-
-    def __init__(self, config):
-        """Initialize the scanner."""
-        self.host = config[CONF_HOST]
-        self.password = config[CONF_PASSWORD]
-        self.parse_device_data = re.compile(r"var deviceData=([\w\W]+?);")
-        self.url_initial = f"http://{self.host}"
-        self.url_login = f"http://{self.host}/cgi-bin/te_acceso_router.cgi"
-        self.url_map = f"http://{self.host}/te_mapa_red_local.asp"
-        self.data_login = {
-            "loginUsername": self.encode("1234"),
-            "loginPassword": self.encode(self.password),
-        }
-        self.last_results = {}
-        self.success_init = self._update_info()
-
-    def scan_devices(self):
-        """Scan for new devices and return a list with found device IDs."""
-        self._update_info()
-        return [item["mac"] for item in self.last_results]
-
-    def get_device_name(self, device):
-        """Return the name of the given device or None if it's unknown."""
-        if not self.last_results:
+    @property
+    def _device(self) -> MovistarDevice | None:
+        """Return the device information, if available."""
+        if self.coordinator.data is None:
             return None
-        for item in self.last_results:
-            if item["mac"] == device and "name" in item:
-                return item["name"]
+        return self.coordinator.data.get(self._mac)
+
+    @property
+    def name(self) -> str:
+        """Return the display name of the device."""
+        device = self._device
+        if device is not None and device.name:
+            return device.name
+        return self._mac
+
+    @property
+    def hostname(self) -> str | None:
+        """Return the hostname of the device."""
+        device = self._device
+        if device is not None and device.name:
+            return device.name
         return None
 
-    def _update_info(self):
-        """Ensure the information is up to date."""
-        _LOGGER.info("Checking devices")
-        devices = self.get_devices()
-        if not devices:
-            return False
-        self.last_results = devices
+    @property
+    def ip_address(self) -> str | None:
+        """Return the IP address of the device."""
+        device = self._device
+        return device.ip if device is not None else None
+
+    @property
+    def is_connected(self) -> bool:
+        """Return whether the device is currently connected."""
+        return self.coordinator.is_device_connected(self._mac)
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Enable new device tracker entities by default."""
         return True
-
-    def encode(self, string):
-        """Encode router login data."""
-        return "".join(chr(ord(character) ^ 0x1F) for character in string)
-
-    def get_devices(self):
-        """Retrieve devices from the router."""
-        _LOGGER.debug("Connecting to the router")
-        session = requests.Session()
-        response = session.get(self.url_initial)
-        headers = session.cookies.get_dict()
-        response = session.post(self.url_login, headers=headers, data=self.data_login)
-        if response.ok:
-            _LOGGER.debug("Connected to the router")
-            devices = []
-            _LOGGER.debug("Getting devices map from the router")
-            response = session.get(self.url_map, headers=headers)
-            if response.ok:
-                for line in response.text.splitlines():
-                    if self.parse_device_data.search(line):
-                        _LOGGER.debug("Devices found in the map")
-                        line_replaced = line.replace("\\", "")
-                        devices_data = ast.literal_eval(
-                            self.parse_device_data.search(line_replaced).group(1)
-                        )
-                        for device in devices_data:
-                            if device[0] == "1":
-                                devices.extend(
-                                    [
-                                        {
-                                            "mac": device[6],
-                                            "ip": device[3],
-                                            "name": device[1],
-                                        }
-                                    ]
-                                )
-                        break
-                if len(devices) == 0:
-                    _LOGGER.warning("No devices found in the map")
-            else:
-                _LOGGER.error("Error getting devices map from the router")
-                devices = None
-        else:
-            _LOGGER.error("Error connecting to the router")
-            devices = None
-        session.close()
-        return devices
